@@ -1,0 +1,180 @@
+{
+  "hyperparameters": [
+    {
+      "name": "GP_Llambda_density_weight_iteration",
+      "type": "uniform_int",
+      "log": false,
+      "lower": 1,
+      "upper": 3,
+      "default": 1
+    },
+    {
+      "name": "GP_Lsub_iteration",
+      "type": "uniform_int",
+      "log": false,
+      "lower": 1,
+      "upper": 3,
+      "default": 1
+    },
+    {
+      "name": "GP_learning_rate",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0001,
+      "upper": 0.01,
+      "default": 0.00025
+    },
+    {
+      "name": "GP_learning_rate_decay",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.99,
+      "upper": 1.0,
+      "default": 1.0
+    },
+    {
+      "name": "GP_num_bins_x",
+      "type": "categorical",
+      "choices": [
+        256,
+        512,
+        1024,
+        2048
+      ],
+      "default": 512,
+      "weights": null
+    },
+    {
+      "name": "GP_num_bins_y",
+      "type": "categorical",
+      "choices": [
+        256,
+        512,
+        1024,
+        2048
+      ],
+      "default": 512,
+      "weights": null
+    },
+    {
+      "name": "GP_optimizer",
+      "type": "categorical",
+      "choices": [
+        "adam",
+        "nesterov"
+      ],
+      "default": "nesterov",
+      "weights": null
+    },
+    {
+      "name": "GP_wirelength",
+      "type": "categorical",
+      "choices": [
+        "weighted_average",
+        "logsumexp"
+      ],
+      "default": "weighted_average",
+      "weights": null
+    },
+    {
+      "name": "RePlAce_LOWER_PCOF",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.9,
+      "upper": 0.99,
+      "default": 0.95
+    },
+    {
+      "name": "RePlAce_UPPER_PCOF",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 1.02,
+      "upper": 1.15,
+      "default": 1.05
+    },
+    {
+      "name": "RePlAce_ref_hpwl",
+      "type": "uniform_int",
+      "log": false,
+      "lower": 150000,
+      "upper": 550000,
+      "default": 350000
+    },
+    {
+      "name": "density_weight",
+      "type": "uniform_float",
+      "log": true,
+      "lower": 1e-06,
+      "upper": 1.0,
+      "default": 0.008
+    },
+    {
+      "name": "gamma",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.1,
+      "upper": 0.5,
+      "default": 0.1318231577
+    },
+    {
+      "name": "init_loc_perc_x",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.2,
+      "upper": 0.8,
+      "default": 0.5
+    },
+    {
+      "name": "init_loc_perc_y",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.2,
+      "upper": 0.8,
+      "default": 0.5
+    },
+    {
+      "name": "macro_halo_x",
+      "type": "uniform_int",
+      "log": true,
+      "lower": 4000,
+      "upper": 8000,
+      "default": 5000
+    },
+    {
+      "name": "macro_halo_y",
+      "type": "uniform_int",
+      "log": true,
+      "lower": 4000,
+      "upper": 8000,
+      "default": 5000
+    },
+    {
+      "name": "pin_density",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.1,
+      "upper": 0.5,
+      "default": 0.5
+    },
+    {
+      "name": "stop_overflow",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.06,
+      "upper": 0.1,
+      "default": 0.07
+    },
+    {
+      "name": "target_density",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.5,
+      "upper": 0.7,
+      "default": 0.6
+    }
+  ],
+  "conditions": [],
+  "forbiddens": [],
+  "python_module_version": "0.6.0",
+  "json_format_version": 0.4
+}
