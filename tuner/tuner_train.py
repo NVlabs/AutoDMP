@@ -22,10 +22,7 @@ import re
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../DREAMPlace/dreamplace")))
-#sys.path.append(
-#    os.path.abspath(os.path.join(os.path.dirname(__file__), "../thirdparty"))
-#)
+
 import hpbandster.core.nameserver as hpns
 import hpbandster.core.result as hpres
 from hpbandster.optimizers import BOHB as BOHB
