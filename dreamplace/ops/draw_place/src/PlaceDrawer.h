@@ -1,3 +1,20 @@
+/*
+* SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+* SPDX-License-Identifier: Apache-2.0
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 /**
  * @file   PlaceDrawer.h
  * @author Yibo Lin
@@ -20,6 +37,7 @@
 #endif
 
 #include <limbo/parsers/gdsii/stream/GdsWriter.h>
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -49,6 +67,7 @@ class PlaceDrawer {
     NODETEXT = 2,
     PIN = 4,
     NET = 8,
+    ALL_PHYS = NODE | PIN | NET,
     ALL = NODE | NODETEXT | PIN | NET
   };
   /// constructor
@@ -62,7 +81,8 @@ class PlaceDrawer {
       const coordinate_type yl, const coordinate_type xh,
       const coordinate_type yh, const coordinate_type site_width,
       const coordinate_type row_height, const coordinate_type bin_size_x,
-      const coordinate_type bin_size_y, int content = ALL)
+      const coordinate_type bin_size_y, bool show_fillers = true,
+      int content = ALL_PHYS)
       : m_x(x),
         m_y(y),
         m_node_size_x(node_size_x),
@@ -82,6 +102,7 @@ class PlaceDrawer {
         m_row_height(row_height),
         m_bin_size_x(bin_size_x),
         m_bin_size_y(bin_size_y),
+        m_show_fillers(show_fillers),
         m_content(content) {}
 
   bool run(std::string const& filename, FileFormat ff) const {
@@ -89,12 +110,12 @@ class PlaceDrawer {
     bool flag = false;
 
     // PlaceDB const& placeDB = m_db.placeDB();
-    int width, height; 
+    int width, height;
     if (m_xh - m_xl < m_yh - m_yl) {
-      height = 800; 
-      width = round(height * (double)(m_xh - m_xl) / (m_yh - m_yl)); 
+      height = 800;
+      width = round(height * (double)(m_xh - m_xl) / (m_yh - m_yl));
     } else {
-      width = 800; 
+      width = 800;
       height = round(width * (double)(m_yh - m_yl) / (m_xh - m_xl));
     }
 
@@ -133,24 +154,33 @@ class PlaceDrawer {
   /// \param height of screen
   void paintCairo(cairo_surface_t* cs, double width, double height) const {
 #if DRAWPLACE == 1
-    double ratio[2] = {width / (m_xh - m_xl), height / (m_yh - m_yl)};
+    double expand = 1.05;
+    double ratio[2] = {width / (expand * (m_xh - m_xl)),
+                       height / (expand * (m_yh - m_yl))};
     char buf[16];
     cairo_t* c;
     cairo_text_extents_t extents;
 
     c = cairo_create(cs);
     cairo_save(c);  // save status
-    cairo_translate(c, 0 - m_xl * ratio[0],
-                    height + m_yl * ratio[1]);  // translate is additive
-    cairo_scale(c, ratio[0], -ratio[1]);        // scale is additive
+    cairo_translate(
+        c, (m_xl + (expand - 1) / 2 * (m_xh - m_xl)) * ratio[0],
+        height - (m_yl + (expand - 1) / 2 * (m_yh - m_yl)) * ratio[1]);
+    cairo_scale(c, ratio[0], -ratio[1]);  // scale is additive
 
+    // exterior
+    cairo_rectangle(c, -(expand - 1) / 2 * (m_xh - m_xl),
+                    -(expand - 1) / 2 * (m_yh - m_yl), expand * (m_xh - m_xl),
+                    expand * (m_yh - m_yl));
+    cairo_set_source_rgb(c, 0.0, 0.0, 0.0);
+    cairo_fill(c);
     // background
     cairo_rectangle(c, m_xl, m_yl, (m_xh - m_xl), (m_yh - m_yl));
-    cairo_set_source_rgb(c, 1.0, 1.0, 1.0);
+    cairo_set_source_rgb(c, 75 / 255.0, 75 / 255.0, 75 / 255.0);
     cairo_fill(c);
     cairo_rectangle(c, m_xl, m_yl, (m_xh - m_xl), (m_yh - m_yl));
-    cairo_set_line_width(c, 0.001);
-    cairo_set_source_rgb(c, 0.1, 0.1, 0.1);
+    cairo_set_line_width(c, 2 * m_row_height);
+    cairo_set_source_rgb(c, 120 / 255.0, 120 / 255.0, 120 / 255.0);
     cairo_stroke(c);
 
     // bins
@@ -175,12 +205,39 @@ class PlaceDrawer {
       // fixed macro
       for (int i = m_num_movable_nodes; i < m_num_nodes - m_num_filler_nodes;
            ++i) {
-        cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i], m_node_size_y[i]);
-        cairo_set_source_rgba(c, 1.0, 0.0, 0.0, 0.5);
-        cairo_fill(c);
-        cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i], m_node_size_y[i]);
-        cairo_set_source_rgb(c, 0.0, 0.0, 0.0);
-        cairo_stroke(c);
+        // for IO terminals - upsize for visibility
+        if (m_node_size_x[i] == 0 && m_node_size_y[i] == 0) {
+          coordinate_type x = m_x[i];
+          coordinate_type y = m_y[i];
+          coordinate_type w = m_site_width;
+          coordinate_type h = m_row_height;
+          if (x <= m_xl || x >= m_xh) {
+            w, h = 10 * h, 10 * h;
+            y -= h / 2;
+            x = (x <= m_xl) ? x - w : x;
+          } else {
+            w, h = 10 * h, 10 * h;
+            x -= w / 2;
+            y = (y <= m_yl) ? y - h : y;
+          }
+          cairo_rectangle(c, x, y, w, h);
+          cairo_set_source_rgb(c, 240 / 255.0, 206 / 255.0, 30 / 255.0);
+          cairo_fill(c);
+          cairo_rectangle(c, x, y, w, h);
+          cairo_set_line_width(c, m_site_width);
+          cairo_set_source_rgb(c, 240 / 255.0, 206 / 255.0, 30 / 255.0);
+          cairo_stroke(c);
+        } else {
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_source_rgba(c, 1.0, 0.0, 0.0, 0.5);
+          cairo_fill(c);
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_line_width(c, 0.001);
+          cairo_set_source_rgb(c, 0.0, 0.0, 0.0);
+          cairo_stroke(c);
+        }
         if (m_content & NODETEXT) {
           sprintf(buf, "%u", i);
           cairo_set_font_size(c, m_node_size_y[i] / 20);
@@ -194,33 +251,52 @@ class PlaceDrawer {
         }
       }
       // filler
-      for (int i = m_num_nodes - m_num_filler_nodes; i < m_num_nodes; ++i) {
-        cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i], m_node_size_y[i]);
-        cairo_set_source_rgba(c, 115 / 255.0, 115 / 255.0, 125 / 255.0, 0.5);
-        cairo_fill(c);
-        cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i], m_node_size_y[i]);
-        cairo_set_source_rgba(c, 100 / 255.0, 100 / 255.0, 100 / 255.0, 0.8);
-        cairo_stroke(c);
-        if (m_content & NODETEXT) {
-          sprintf(buf, "%u", i);
-          cairo_set_font_size(c, m_node_size_y[i] / 20);
-          cairo_text_extents(c, buf, &extents);
-          cairo_move_to(c,
-                        (m_x[i] + m_node_size_x[i] / 2) -
-                            (extents.width / 2 + extents.x_bearing),
-                        (m_y[i] + m_node_size_y[i] / 2) -
-                            (extents.height / 2 + extents.y_bearing));
-          cairo_show_text(c, buf);
+      if (m_show_fillers) {
+        for (int i = m_num_nodes - m_num_filler_nodes; i < m_num_nodes; ++i) {
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_source_rgba(c, 115 / 255.0, 115 / 255.0, 125 / 255.0, 0.5);
+          cairo_fill(c);
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_source_rgba(c, 100 / 255.0, 100 / 255.0, 100 / 255.0, 0.8);
+          cairo_stroke(c);
+          if (m_content & NODETEXT) {
+            sprintf(buf, "%u", i);
+            cairo_set_font_size(c, m_node_size_y[i] / 20);
+            cairo_text_extents(c, buf, &extents);
+            cairo_move_to(c,
+                          (m_x[i] + m_node_size_x[i] / 2) -
+                              (extents.width / 2 + extents.x_bearing),
+                          (m_y[i] + m_node_size_y[i] / 2) -
+                              (extents.height / 2 + extents.y_bearing));
+            cairo_show_text(c, buf);
+          }
         }
       }
       // movable
       for (int i = 0; i < m_num_movable_nodes; ++i) {
-        cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i], m_node_size_y[i]);
-        cairo_set_source_rgba(c, 0, 0, 1, 0.5);
-        cairo_fill(c);
-        cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i], m_node_size_y[i]);
-        cairo_set_source_rgba(c, 0, 0, 0.8, 0.8);
-        cairo_stroke(c);
+        if (m_node_size_y[i] > 2 * m_row_height) {
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_source_rgb(c, 200 / 255.0, 100 / 255.0, 100 / 255.0);
+          cairo_fill(c);
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_line_width(c, m_row_height);
+          cairo_set_source_rgb(c, 20 / 255.0, 20 / 255.0, 255 / 255.0);
+          cairo_stroke(c);
+        } else {
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_source_rgb(c, 140 / 255.0, 140 / 255.0, 140 / 255.0);
+          cairo_fill(c);
+          cairo_rectangle(c, m_x[i], m_y[i], m_node_size_x[i],
+                          m_node_size_y[i]);
+          cairo_set_line_width(c, m_site_width);
+          cairo_set_source_rgb(c, 140 / 255.0, 140 / 255.0, 140 / 255.0);
+          cairo_stroke(c);
+        }
         if (m_content & NODETEXT) {
           sprintf(buf, "%u", i);
           cairo_set_font_size(c, m_node_size_y[i] / 20);
@@ -476,6 +552,7 @@ class PlaceDrawer {
   coordinate_type m_row_height;
   coordinate_type m_bin_size_x;
   coordinate_type m_bin_size_y;
+  bool m_show_fillers;
   std::set<index_type> m_sMarkNode;  ///< marked nodes whose net will be drawn
   int m_content;                     ///< content for DrawContent
 };

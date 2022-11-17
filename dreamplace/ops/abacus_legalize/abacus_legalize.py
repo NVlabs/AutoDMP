@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ##
 # @file   abacus_legalize.py
 # @author Yibo Lin
@@ -13,8 +28,8 @@ import dreamplace.ops.abacus_legalize.abacus_legalize_cpp as abacus_legalize_cpp
 
 
 class AbacusLegalizeFunction(Function):
-    """ Legalize cells with abacus approach 
-    """
+    """Legalize cells with abacus approach"""
+
     @staticmethod
     def forward(
         init_pos,
@@ -35,7 +50,7 @@ class AbacusLegalizeFunction(Function):
         num_bins_y,
         num_movable_nodes,
         num_terminal_NIs,
-        num_filler_nodes
+        num_filler_nodes,
     ):
         if pos.is_cuda:
             output = abacus_legalize_cpp.forward(
@@ -57,7 +72,7 @@ class AbacusLegalizeFunction(Function):
                 num_bins_y,
                 num_movable_nodes,
                 num_terminal_NIs,
-                num_filler_nodes
+                num_filler_nodes,
             ).cuda()
         else:
             output = abacus_legalize_cpp.forward(
@@ -79,18 +94,29 @@ class AbacusLegalizeFunction(Function):
                 num_bins_y,
                 num_movable_nodes,
                 num_terminal_NIs,
-                num_filler_nodes
+                num_filler_nodes,
             )
         return output
 
 
 class AbacusLegalize(object):
-    """ Legalize cells with abacus approach 
-    """
+    """Legalize cells with abacus approach"""
 
-    def __init__(self, node_size_x, node_size_y, node_weights,
-                 flat_region_boxes, flat_region_boxes_start, node2fence_region_map,
-                 xl, yl, xh, yh, site_width, row_height, num_bins_x, num_bins_y, num_movable_nodes, num_terminal_NIs, num_filler_nodes):
+    def __init__(
+        self,
+        node_size_x,
+        node_size_y,
+        node_weights,
+        flat_region_boxes,
+        flat_region_boxes_start,
+        node2fence_region_map,
+        fp_info,
+        num_bins_x,
+        num_bins_y,
+        num_movable_nodes,
+        num_terminal_NIs,
+        num_filler_nodes,
+    ):
         super(AbacusLegalize, self).__init__()
         self.node_size_x = node_size_x
         self.node_size_y = node_size_y
@@ -98,12 +124,7 @@ class AbacusLegalize(object):
         self.flat_region_boxes = flat_region_boxes
         self.flat_region_boxes_start = flat_region_boxes_start
         self.node2fence_region_map = node2fence_region_map
-        self.xl = xl
-        self.yl = yl
-        self.xh = xh
-        self.yh = yh
-        self.site_width = site_width
-        self.row_height = row_height
+        self.fp_info = fp_info
         self.num_bins_x = num_bins_x
         self.num_bins_y = num_bins_y
         self.num_movable_nodes = num_movable_nodes
@@ -111,7 +132,7 @@ class AbacusLegalize(object):
         self.num_filler_nodes = num_filler_nodes
 
     def __call__(self, init_pos, pos):
-        """ 
+        """
         @param init_pos the reference position for displacement minization
         @param pos current roughly legal position
         """
@@ -124,12 +145,12 @@ class AbacusLegalize(object):
             flat_region_boxes=self.flat_region_boxes,
             flat_region_boxes_start=self.flat_region_boxes_start,
             node2fence_region_map=self.node2fence_region_map,
-            xl=self.xl,
-            yl=self.yl,
-            xh=self.xh,
-            yh=self.yh,
-            site_width=self.site_width,
-            row_height=self.row_height,
+            xl=self.fp_info.xl,
+            yl=self.fp_info.yl,
+            xh=self.fp_info.xh,
+            yh=self.fp_info.yh,
+            site_width=self.fp_info.site_width,
+            row_height=self.fp_info.row_height,
             num_bins_x=self.num_bins_x,
             num_bins_y=self.num_bins_y,
             num_movable_nodes=self.num_movable_nodes,

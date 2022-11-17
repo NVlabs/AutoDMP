@@ -1,11 +1,29 @@
+/*
+* SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+* SPDX-License-Identifier: Apache-2.0
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 /**
  * @file   draw_place.cpp
  * @author Yibo Lin
  * @date   Jun 2018
  * @brief  Plot placement to an image
  */
-#include "draw_place/src/draw_place.h"
 #include <sstream>
+
+#include "draw_place/src/draw_place.h"
 #include "utility/src/torch.h"
 
 DREAMPLACE_BEGIN_NAMESPACE
@@ -35,7 +53,8 @@ int draw_place_forward(at::Tensor pos, at::Tensor node_size_x,
                        double xl, double yl, double xh, double yh,
                        double site_width, double row_height, double bin_size_x,
                        double bin_size_y, int num_movable_nodes,
-                       int num_filler_nodes, const std::string& filename) {
+                       int num_filler_nodes, const std::string& filename,
+                       bool show_fillers) {
   CHECK_FLAT_CPU(pos);
   CHECK_EVEN(pos);
   CHECK_CONTIGUOUS(pos);
@@ -54,7 +73,8 @@ int draw_place_forward(at::Tensor pos, at::Tensor node_size_x,
         DREAMPLACE_TENSOR_DATA_PTR(pin_offset_y, scalar_t),
         DREAMPLACE_TENSOR_DATA_PTR(pin2node_map, int), num_nodes,
         num_movable_nodes, num_filler_nodes, pin2node_map.numel(), xl, yl, xh,
-        yh, site_width, row_height, bin_size_x, bin_size_y, filename);
+        yh, site_width, row_height, bin_size_x, bin_size_y, filename,
+        show_fillers);
   });
 
   return ret;
