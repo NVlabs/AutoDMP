@@ -1,6 +1,7 @@
 FROM nvcr.io/nvidia/pytorch:21.10-py3
 MAINTAINER <haoxingr@nvidia.com>
 
+
 ARG ssh_prv_key
 ARG ssh_pub_key
 
@@ -23,14 +24,22 @@ RUN git clone --recursive git@github.com:nvlabs/AutoDMP /AutoDMP
 RUN rm /root/.ssh/id_ed25519 && \
     rm /root/.ssh/id_ed25519.pub
 
-ARG DEBIAN_FRONTEND=noninteractive
+# update torch
+RUN pip install --upgrade pip 
+RUN pip install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio===0.10.0+cu113  -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
         && apt-get install -y \
             wget \
             flex \
-            libcairo2-dev \
-            libboost-all-dev 
+            libcairo2-dev 
+
+RUN wget -O boost_1_66_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.66.0/source/boost_1_66_0.tar.gz && \
+    tar xvf boost_1_66_0.tar.gz && \
+    cd boost_1_66_0 && \
+    ./bootstrap.sh  &&\
+    ./b2 -q install -j 16 --without-python
 
 # install system dependency from conda
 RUN conda install -y -c conda-forge bison
@@ -58,11 +67,18 @@ RUN pip install \
         pyDOE2>=1.3.0 \
         shap>=0.41.0 
 
-RUN mkdir /AutoDMP/build && \
-    cd /AutoDMP/build && \
-    cmake .. -DCMAKE_INSTALL_PREFIX=/AutoDMP && \
-    make -j16 && \
-    make install 
 
 
 
+
+# run following command inside container and commit later
+# RUN cd /AutoDMP/build && \
+#    cmake .. -DCMAKE_INSTALL_PREFIX=/AutoDMP && \
+#    make -j16 && \
+#    make install
+
+# after exit from docker container
+# docker ps -a
+# docker commit [container_id] [new_image_name]
+# docker push [new_image_name]
+                                      
