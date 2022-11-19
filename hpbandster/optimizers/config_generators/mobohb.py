@@ -144,7 +144,7 @@ class MOBOHB(base_config_generator):
             budget_type, budget_counts = np.unique(budgets, return_counts=True)
         else:
             budget_type = []
-            budget_counts = []
+            budget_counts = 0
 
         if budget != 25:
             self.init = False
