@@ -75,7 +75,7 @@ at::Tensor hpwl_forward(at::Tensor pos, at::Tensor flat_netpin,
   if (net_weights.numel()) {
     partial_wl.mul_(net_weights.view({1, num_nets}));
   }
-  return partial_wl;
+  return partial_wl.sum(0);
 }
 
 DREAMPLACE_END_NAMESPACE

@@ -95,7 +95,7 @@ at::Tensor hpwl_atomic_forward(at::Tensor pos, at::Tensor pin2net_map,
   if (net_weights.numel()) {
     hpwl.mul_(net_weights.view({1, num_nets}));
   }
-  return hpwl.mul_(1.0 / 1000);
+  return hpwl.sum(0).mul_(1.0 / 1000);
 }
 
 DREAMPLACE_END_NAMESPACE

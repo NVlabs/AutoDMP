@@ -1169,7 +1169,6 @@ class NonLinearPlace(BasicPlace.BasicPlace):
             steiners = self.op_collections.rsmt_wl_op(self.pos[0], False)[mask]
             wirelengths = (
                 self.op_collections.hpwl_op(self.pos[0], False)
-                .sum(0)
                 .cpu()
                 .detach()[mask]
             )

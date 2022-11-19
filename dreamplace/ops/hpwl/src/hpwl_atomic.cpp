@@ -82,7 +82,7 @@ at::Tensor hpwl_atomic_forward(at::Tensor pos, at::Tensor pin2net_map,
     hpwl.mul_(net_weights.view({1, num_nets}));
   }
 
-  return hpwl;
+  return hpwl.sum(0);
 }
 
 template <typename T>
