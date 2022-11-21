@@ -37,8 +37,8 @@ proc load_candidate { candidate } {
 proc evaluate_paretos { } {
     set best_candidate ""
     set best_cost 2147483647
-    puts "###### INFO: Evaluating DREAMPlace Paretos ######"
-    set candidates [open "|find best_cfgs -name \*.DREAMPlace.def -print" r]
+    puts "###### INFO: Evaluating AutoDMP Paretos ######"
+    set candidates [open "|find best_cfgs -name \*.AutoDMP.def -print" r]
     while { [gets $candidates c] >= 0 } {
         lassign [load_candidate $c] wl hpwl hcong vcong density
         set cost [ppa_cost $wl $hcong $vcong $density]

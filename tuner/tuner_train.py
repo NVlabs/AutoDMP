@@ -33,13 +33,13 @@ opj = os.path.join
 # disable heavy logging from C++
 os.environ["DREAMPLACE_DISABLE_PRINT"] = "1"
 
-from tuner_worker import DREAMPlaceWorker
+from tuner_worker import AutoDMPWorker
 from tuner_utils import parse_dictionary, str2bool, dp_to_def
 from tuner_analyze import get_candidates, plot_pareto
 
 
 parser = argparse.ArgumentParser(
-    description="Optimization of DREAMPlace parameters",
+    description="Optimization of AutoDMP parameters",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
 parser.add_argument(
@@ -98,7 +98,7 @@ parser.add_argument(
 parser.add_argument("--log_dir", help="Result log dir", default="logs_tuner")
 parser.add_argument("--run_id", help="Run id for communication", default="0")
 parser.add_argument(
-    "--run_args", nargs="*", help="Args for DREAMPlace", action=parse_dictionary
+    "--run_args", nargs="*", help="Args for AutoDMP", action=parse_dictionary
 )
 parser.add_argument(
     "--worker", help="Flag to turn this into a worker process", action="store_true"
@@ -119,7 +119,7 @@ if args.worker:
         args.run_args["gpu_id"] = gpu_id
         print(f"Assigning worker {args.worker_id} to GPU {gpu_id}")
 
-    w = DREAMPlaceWorker(
+    w = AutoDMPWorker(
         nameserver="127.0.0.1",
         run_id=args.run_id,
         log_dir=args.log_dir,
@@ -153,7 +153,7 @@ if args.multiobj:
         "gamma": 0.10,
     }
     bohb = MOBOHB(
-        configspace=DREAMPlaceWorker.get_configspace(args.cfgSearchFile),
+        configspace=AutoDMPWorker.get_configspace(args.cfgSearchFile),
         parameters=motpe_params,
         run_id=args.run_id,
         min_points_in_model=args.min_points_in_model,
@@ -164,7 +164,7 @@ if args.multiobj:
     )
 else:
     bohb = BOHB(
-        configspace=DREAMPlaceWorker.get_configspace(args.cfgSearchFile),
+        configspace=AutoDMPWorker.get_configspace(args.cfgSearchFile),
         run_id=args.run_id,
         min_points_in_model=args.min_points_in_model,
         min_budget=args.min_budget,
@@ -212,7 +212,7 @@ for _, row in candidates.iterrows():
     def_file = opj(dp_dir, f"{netlist}.ref.def")
     macro_file = opj(dp_dir, f"{netlist}.macros")
     pl_file = opj(src_cfg, netlist, f"{netlist}.gp.pl")
-    new_def_file = opj(dest_cfg, f"{netlist}.DREAMPlace.def")
+    new_def_file = opj(dest_cfg, f"{netlist}.AutoDMP.def")
     dp_to_def(def_file, pl_file, macro_file, new_def_file)
 
 # Plot Pareto curve

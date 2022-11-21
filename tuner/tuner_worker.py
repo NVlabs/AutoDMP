@@ -28,15 +28,15 @@ from hpbandster.core.worker import Worker
 from dreamplace.Placer import PlacementEngine
 
 from tuner.tuner_configs import (
-    DREAMPLACE_BASE_CONFIG,
-    DREAMPLACE_BASE_PPA,
-    DREAMPLACE_BAD_RATIO,
-    DREAMPLACE_BEST_CFG,
+    AUTODMP_BASE_CONFIG,
+    AUTODMP_BASE_PPA,
+    AUTODMP_BAD_RATIO,
+    AUTODMP_BEST_CFG,
 )
 
 opj = os.path.join
 
-# Wrap DREAMPlace config in dataclass
+# Wrap AutoDMP config in dataclass
 def update_cfg(self, cfg):
     my_fields = [f.name for f in fields(self)]
     for p, v in cfg.items():
@@ -49,12 +49,12 @@ def update_cfg(self, cfg):
                 gp[p] = type(gp[p])(v)
 
 
-DREAMPlaceConfig = make_dataclass(
-    "DREAMPlaceConfig", DREAMPLACE_BASE_CONFIG, namespace={"update_cfg": update_cfg}
+AutoDMPConfig = make_dataclass(
+    "AutoDMPConfig", AUTODMP_BASE_CONFIG, namespace={"update_cfg": update_cfg}
 )
 
 
-class DREAMPlaceWorker(Worker):
+class AutoDMPWorker(Worker):
     def __init__(
         self,
         log_dir,
@@ -77,7 +77,7 @@ class DREAMPlaceWorker(Worker):
             with path_reuse.open() as f:
                 best_params = json.load(f)
         else:
-            best_params = DREAMPLACE_BEST_CFG.get(default_config["reuse_params"], {})
+            best_params = AUTODMP_BEST_CFG.get(default_config["reuse_params"], {})
         print("Reusing best parameters:", best_params)
         self.default_config = {**best_params, **default_config}
 
@@ -87,16 +87,16 @@ class DREAMPlaceWorker(Worker):
             with path_ppa.open() as f:
                 self.base_ppa = json.load(f)
         else:
-            self.base_ppa = DREAMPLACE_BASE_PPA[default_config["base_ppa"]]
+            self.base_ppa = AUTODMP_BASE_PPA[default_config["base_ppa"]]
         print("PPA reference:", self.base_ppa)
         self.bad_run = {
-            k: float(v * DREAMPLACE_BAD_RATIO) for k, v in self.base_ppa.items()
+            k: float(v * AUTODMP_BAD_RATIO) for k, v in self.base_ppa.items()
         }
 
         self._setup_placer()
 
     def _create_params(self, config):
-        params = DREAMPlaceConfig(**DREAMPLACE_BASE_CONFIG)
+        params = AutoDMPConfig(**AUTODMP_BASE_CONFIG)
         params.update_cfg(self.default_config)
         params.update_cfg(config)
         return asdict(params)
@@ -110,7 +110,7 @@ class DREAMPlaceWorker(Worker):
         # change logger
         log = logging.getLogger()
         filehandler = logging.FileHandler(
-            opj(working_directory, f"DREAMPlace{suffix}.log"), "w"
+            opj(working_directory, f"AutoDMP{suffix}.log"), "w"
         )
         formatter = logging.Formatter("[%(levelname)-7s] %(name)s - %(message)s")
         filehandler.setFormatter(formatter)
@@ -185,7 +185,7 @@ class DREAMPlaceWorker(Worker):
             "init_loc_perc_y", lower=0.2, upper=0.8, default_value=0.5
         )
         td = CSH.UniformFloatHyperparameter(
-            "target_density", lower=0.50, upper=0.70, default_value=0.50
+            "target_density", lower=0.50, upper=0.80, default_value=0.70
         )
         dw = CSH.UniformFloatHyperparameter(
             "density_weight", lower=1e-6, upper=1e-0, default_value=8e-3, log=True

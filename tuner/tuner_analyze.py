@@ -78,7 +78,7 @@ def plot_pareto(result, num, filename):
     ax.set_xlabel("congestion", fontsize=15)
     ax.set_ylabel("density", fontsize=15)
     ax.set_zlabel("rsmt", fontsize=15)
-    ax.set_title("Pareto DREAMPlace", fontsize=15)
+    ax.set_title("Pareto AutoDMP", fontsize=15)
     ax.view_init(20, 70)
     plt.savefig(filename, dpi=800)
 

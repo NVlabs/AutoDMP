@@ -28,7 +28,7 @@ set sdc ${handoff_dir}/${DESIGN}.sdc
 
 # utilities
 source ../../../../util/extract_report.tcl
-source DREAMPlace_utils.tcl
+source AutoDMP_utils.tcl
 
 # report settings
 set encDir enc
@@ -42,18 +42,18 @@ if {![file exists $dpDir/]} {
 }
 
 # flow settings
-set var(DREAMPlace,prePlace) 0; # run pre- or post-DREAMPlace flow
-set var(DREAMPlace,unoptNetlist) 0; # use unoptimized or optimized netlist
-set var(DREAMPlace,macrosOnly) 0; # use macros only vs. +std cells DREAMPlace placement
+set var(AutoDMP,prePlace) 0; # run pre- or post-AutoDMP flow
+set var(AutoDMP,unoptNetlist) 0; # use unoptimized or optimized netlist
+set var(AutoDMP,macrosOnly) 0; # use macros only vs. +std cells AutoDMP placement
 
 set technology "NanGate45"
 set designName "${DESIGN}_${technology}"
 
 # ------------------------------------------------------------------------------
-#  Pre-DREAMPlace flow
+#  Pre-AutoDMP flow
 # ------------------------------------------------------------------------------
-if { ${var(DREAMPlace,prePlace)} == 1 } {
-    puts "###### INFO: Running Pre-DREAMPlace flow ######"
+if { ${var(AutoDMP,prePlace)} == 1 } {
+    puts "###### INFO: Running Pre-AutoDMP flow ######"
     puts "###### Configuration: "
     parray var
 
@@ -110,8 +110,8 @@ if { ${var(DREAMPlace,prePlace)} == 1 } {
     setDesignMode -topRoutingLayer $TOP_ROUTING_LAYER
     setDesignMode -bottomRoutingLayer 2
 
-    if { ${var(DREAMPlace,unoptNetlist)} == 1 } {
-        # extract DREAMPlace files
+    if { ${var(AutoDMP,unoptNetlist)} == 1 } {
+        # extract AutoDMP files
         source generate_bookshelf.tcl
         saveDesign -tcon -verilog -def ${encDir}/${designName}_preDP.enc
     } else {
@@ -124,7 +124,7 @@ if { ${var(DREAMPlace,prePlace)} == 1 } {
         setPlaceMode -place_opt_run_global_place full
         place_opt_design
 
-        # extract DREAMPlace files
+        # extract AutoDMP files
         source generate_bookshelf.tcl
         saveDesign -tcon -verilog -def ${encDir}/${designName}_preDP.enc
     }
@@ -133,10 +133,10 @@ if { ${var(DREAMPlace,prePlace)} == 1 } {
 }
 
 # ------------------------------------------------------------------------------
-#  Post-DREAMPlace Flow
+#  Post-AutoDMP Flow
 # ------------------------------------------------------------------------------
-if { ${var(DREAMPlace,prePlace)} == 0 } {
-    puts "###### INFO: Running Post-DREAMPlace flow ######"
+if { ${var(AutoDMP,prePlace)} == 0 } {
+    puts "###### INFO: Running Post-AutoDMP flow ######"
     puts "###### Configuration: "
     parray var
 
@@ -146,14 +146,14 @@ if { ${var(DREAMPlace,prePlace)} == 0 } {
     # update constraint mode
     update_constraint_mode -name CON -sdc_files ${sdc}
 
-    # load DREAMPlace placement
+    # load AutoDMP placement
     set best_candidate [evaluate_paretos]
     defIn -components ${best_candidate}
     refine_macro_place
     dbset [dbget top.insts.cell.baseClass block -p2].pStatus fixed
     # refinePlace -eco true
 
-    if { ${var(DREAMPlace,macrosOnly)} == 1 } {
+    if { ${var(AutoDMP,macrosOnly)} == 1 } {
         dbset [dbget top.insts.cell.subClass core -p2].pStatus unplaced; # unplace std cells
     }
 
@@ -162,14 +162,14 @@ if { ${var(DREAMPlace,prePlace)} == 0 } {
     source pdn_flow.tcl
 
     # place-opt
-    if { ${var(DREAMPlace,macrosOnly)} == 1 } {
+    if { ${var(AutoDMP,macrosOnly)} == 1 } {
         setPlaceMode -place_opt_run_global_place full
         place_opt_design
     } else {
         # some cells might be unplaced due to P/G grid
         dbset [dbget top.insts.pStatus unplaced -p].pStatus placed
 
-        if { ${var(DREAMPlace,unoptNetlist)} == 1 } {
+        if { ${var(AutoDMP,unoptNetlist)} == 1 } {
             # setDesignMode -flowEffort extreme
             place_opt_design -incremental
             # place_opt_design -incremental; # -incremental_timing
@@ -180,7 +180,7 @@ if { ${var(DREAMPlace,prePlace)} == 0 } {
     }
     saveDesign -tcon -verilog -def ${encDir}/${designName}_preCTS.enc
     set rpt_pre_cts [extract_report preCTS]
-    echo "Post-DREAMPlace $rpt_pre_cts" >> ${designName}_DETAILS.rpt
+    echo "Post-AutoDMP $rpt_pre_cts" >> ${designName}_DETAILS.rpt
 
     # CTS
     set_ccopt_property post_conditioning_enable_routing_eco 1

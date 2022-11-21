@@ -23,18 +23,18 @@ function fn_runInvs {
 
 function fn_PreDP {
     mkdir -p log >/dev/null 2>&1
-    cp run_invs_DREAMPlace.tcl tmp.tcl
-    sed -i "s/set var(DREAMPlace,prePlace) [0-1]/set var(DREAMPlace,prePlace) 1/g" tmp.tcl
-    sed -i "s/set var(DREAMPlace,unoptNetlist) [0-1]/set var(DREAMPlace,unoptNetlist) ${1}/g" tmp.tcl
+    cp run_invs_AutoDMP.tcl tmp.tcl
+    sed -i "s/set var(AutoDMP,prePlace) [0-1]/set var(AutoDMP,prePlace) 1/g" tmp.tcl
+    sed -i "s/set var(AutoDMP,unoptNetlist) [0-1]/set var(AutoDMP,unoptNetlist) ${1}/g" tmp.tcl
     fn_runInvs "tmp.tcl" "log/preDP_$1.log"
 }
 
 function fn_PostDP {
     mkdir -p log >/dev/null 2>&1
-    cp run_invs_DREAMPlace.tcl tmp.tcl
-    sed -i "s/set var(DREAMPlace,prePlace) [0-1]/set var(DREAMPlace,prePlace) 0/g" tmp.tcl
-    sed -i "s/set var(DREAMPlace,unoptNetlist) [0-1]/set var(DREAMPlace,unoptNetlist) ${1}/g" tmp.tcl
-    sed -i "s/set var(DREAMPlace,macrosOnly) [0-1]/set var(DREAMPlace,macrosOnly) ${2}/g" tmp.tcl
+    cp run_invs_AutoDMP.tcl tmp.tcl
+    sed -i "s/set var(AutoDMP,prePlace) [0-1]/set var(AutoDMP,prePlace) 0/g" tmp.tcl
+    sed -i "s/set var(AutoDMP,unoptNetlist) [0-1]/set var(AutoDMP,unoptNetlist) ${1}/g" tmp.tcl
+    sed -i "s/set var(AutoDMP,macrosOnly) [0-1]/set var(AutoDMP,macrosOnly) ${2}/g" tmp.tcl
     fn_runInvs "tmp.tcl" "log/postDP_$1_$2.log"
 }
 
@@ -46,11 +46,10 @@ function fn_Tuner {
 
 # Run command
 if [[ $1 = @(runInvs|PreDP|PostDP|Tuner) ]]; then
-    fn_$1 ${@:2}
-    # until fn_$1 ${@:2}; do
-    #     echo "Command crashed with exit code $?. Respawning..." >&2
-    #     sleep 1
-    # done
+    until fn_$1 ${@:2}; do
+        echo "Command crashed with exit code $?. Respawning..." >&2
+        sleep 1
+    done
 else
     echo "Wrong command."
 fi

@@ -17,6 +17,8 @@
 
 #!/bin/bash -x
 
+# export PYTHONPATH=/AutoDMP
+
 gpu=${1}
 multiobj=${2}
 cfg=${3}
@@ -28,9 +30,10 @@ workers=${8}
 d_ratio=${9}
 c_ratio=${10}
 m_points=${11}
-log_dir=${12}
+script_dir=${12}
+log_dir=${13}
 auxbase=$(basename $aux .aux)
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+# script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo "Parameters:" $@
 printf "# Parameters: %s\n" "${#@}"

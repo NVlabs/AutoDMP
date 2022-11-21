@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# DREAMPlace base config
-DREAMPLACE_BASE_CONFIG = {
+# AutoDMP base config
+AUTODMP_BASE_CONFIG = {
     "aux_input": "",
     "lef_input": "",
     "def_input": "",
@@ -27,7 +27,7 @@ DREAMPLACE_BASE_CONFIG = {
         {
             "num_bins_x": 512,
             "num_bins_y": 512,
-            "iteration": 2000,
+            "iteration": 3000,
             "learning_rate": 0.01,
             "wirelength": "weighted_average",
             "optimizer": "adam",
@@ -101,12 +101,12 @@ DREAMPLACE_BASE_CONFIG = {
 }
 
 
-# Cost ratio for unfinished DREAMPlace runs
-DREAMPLACE_BAD_RATIO = 10
+# Cost ratio for unfinished AutoDMP runs
+AUTODMP_BAD_RATIO = 10
 
 
 # Base PPA: HPWL, RSMT, Congestion, Density
-DREAMPLACE_BASE_PPA = {
+AUTODMP_BASE_PPA = {
     "nvdla_asap7": {
         "hpwl": 1.37e9,
         "rsmt": 1.62e9,
@@ -143,11 +143,17 @@ DREAMPLACE_BASE_PPA = {
         "congestion": 0.65,
         "density": 0.68,
     },
+    "mempool_nangate45": {
+        "hpwl": 1.80e11,
+        "rsmt": 1.65e11,
+        "congestion": 1.0,
+        "density": 0.68,
+    },
 }
 
 
 # Best found parameters
-DREAMPLACE_BEST_CFG = {
+AUTODMP_BEST_CFG = {
     "nvdla_asap7": {
         "GP_num_bins_x": 2048,
         "GP_num_bins_y": 512,

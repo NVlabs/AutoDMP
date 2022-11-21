@@ -264,13 +264,13 @@ close $fp_route
 #########################
 defOut -floorplan -unplaced -netlist ${design}.ref.def
 
-# process names causing Bookshelf issues in DREAMPlace
+# process names causing Bookshelf issues in AutoDMP
 exec /bin/sed -i {s/\\\[/\[/g;s/\\\]/\]/g;s/\\\//\//g} ${design}.nodes
 exec /bin/sed -i {s/\\\[/\[/g;s/\\\]/\]/g;s/\\\//\//g} ${design}.nets
 exec /bin/sed -i {s/\\\[/\[/g;s/\\\]/\]/g;s/\\\//\//g} ${design}.pl
 exec /bin/sed -i {s/\\\[/\[/g;s/\\\]/\]/g;s/\\\//\//g} ${design}.wts
 exec /bin/sed -i {s/\\\[/\[/g;s/\\\]/\]/g;s/\\\//\//g} ${design}.macros
 exec /bin/sed -i {s/\\\[/\[/g;s/\\\]/\]/g;s/\\\//\//g} ${design}.route_info
-exec /bin/sed -i -r {s/([0-9]+\s)_/\1DREAMPlace_/g} ${design}.nets
+exec /bin/sed -i -r {s/([0-9]+\s)_/\1AutoDMP_/g} ${design}.nets
 
 eval exec mv [glob ${design}.*] ${dpDir}/
