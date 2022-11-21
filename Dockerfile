@@ -65,10 +65,11 @@ RUN pip install \
         shapely>=1.7.0 \
         pygmo>=2.16.1 \
         pyDOE2>=1.3.0 \
-        shap>=0.41.0 
-
-
-
+        shap>=0.41.0 \
+        Pyro4>=4.82 \
+        ConfigSpace>=0.6.0 \
+        statsmodels>=0.13.2 \
+        xgboost>=1.5.1 
 
 
 # run following command inside container and commit later

@@ -16,7 +16,9 @@ AutoDMP adds concurrent macro and standard cell placement (CMP) enhancements and
 
 # How to Build 
 
-Follow the instructions to build DREAMPlace at [README_DREAMPlace.md](README_DREAMPlace.md).
+You can build two ways:
+- Build without using Docker by following the instructions of the DREAMPlace build at [README_DREAMPlace.md](README_DREAMPlace.md).
+- Use the provided Dockerfile to build an image with the required library dependencies.
 
 # How to Run Multi-Objective Bayesian Optimization
 
