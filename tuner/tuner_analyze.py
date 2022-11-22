@@ -26,12 +26,10 @@ import shap
 pd.set_option("display.max_rows", 50)
 
 
-def get_candidates(result, num: int = 5, band: float = 1.05):
+def build_dataframe(result):
     id2conf = result.get_id2config_mapping()
     all_runs = result.get_all_runs(only_largest_budget=False)
-    all_ids = []
-    all_configs = []
-    all_infos = []
+    all_ids, all_configs, all_infos = [], [], []
     for r in all_runs:
         all_ids.append(str(r.config_id))
         config = id2conf[r.config_id]["config"]
@@ -42,25 +40,32 @@ def get_candidates(result, num: int = 5, band: float = 1.05):
         axis=1,
     )
     df.rename(columns={0: "ID"}, inplace=True)
-    # real Pareto points
-    feats = ["rsmt", "congestion", "density"]
-    undominated = (df[feats].values[:, None] >= df[feats].values).all(axis=2).sum(
+    return df
+
+
+def extract_paretos(df, axes):
+    undominated = (df[axes].values[:, None] >= df[axes].values).all(axis=2).sum(
         axis=1
     ) == 1
-    true_paretos = df[undominated].nsmallest(num, "cost")
-    # density should be deciding factor among low rsmt/congestion
-    dfGood = df[
-        (df["rsmt"] <= df["rsmt"].min() * band)
-        & (df["congestion"] < df["congestion"].min() * band)
-    ]
-    feats = ["density"]
-    undominated = (dfGood[feats].values[:, None] >= dfGood[feats].values).all(
-        axis=2
-    ).sum(axis=1) == 1
-    fake_paretos = dfGood[undominated].nsmallest(num, "density")
-    proposed_paretos = pd.concat([true_paretos, fake_paretos])
-    proposed_paretos.drop_duplicates(inplace=True)
-    return proposed_paretos, df
+    return df[undominated]
+
+
+def get_candidates(result, num: int = 5, band: float = 1.1):
+    df = build_dataframe(result)
+    axes = ["rsmt", "congestion", "density"]
+    paretos = extract_paretos(df, axes)
+    print(f"# Pareto-optimal points = {len(paretos)}")
+    if "cost" in df:
+        return paretos.nsmallest(num, "cost")
+    # dfGood = df[(df[axes] <= df[axes].min() * band).all(axis=1)]
+    # intersect = pd.merge(paretos, dfGood)
+    # from sklearn.cluster import KMeans
+    # from sklearn.preprocessing import StandardScaler
+    # model = KMeans(n_clusters=num)
+    # scaled_points = StandardScaler().fit_transform(paretos[axes])
+    # paretos["group"] = model.fit_predict(scaled_points)
+    # paretos.groupby(["group"]).groups
+    return paretos, df
 
 
 def plot_pareto(result, num, filename):

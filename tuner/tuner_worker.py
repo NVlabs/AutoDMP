@@ -147,13 +147,6 @@ class AutoDMPWorker(Worker):
         rsmt_norm = ppa["rsmt"] / self.base_ppa["rsmt"]
         congestion_norm = ppa["congestion"] / self.base_ppa["congestion"]
         density_norm = ppa["density"] / self.base_ppa["density"]
-        cost = (
-            rsmt_norm
-            + self.congestion_ratio * congestion_norm
-            + self.density_ratio * density_norm
-        )
-        result.update({"cost": float(cost)})
-        logging.info(f"BOHB Cost: {cost}")
 
         if self.multiobj:
             return {
@@ -161,6 +154,12 @@ class AutoDMPWorker(Worker):
                 "info": result,
             }
         else:
+            cost = (
+                rsmt_norm
+                + self.congestion_ratio * congestion_norm
+                + self.density_ratio * density_norm
+            )
+            result.update({"cost": float(cost)})
             return {
                 "loss": float(cost),
                 "info": result,
@@ -264,7 +263,7 @@ class AutoDMPWorker(Worker):
                 dw,
                 halox,
                 haloy,
-                ovflow,
+                # ovflow,
                 gamma,
                 lr,
                 lr_decay,
