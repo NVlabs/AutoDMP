@@ -46,7 +46,7 @@ import dreamplace.NonLinearPlace as NonLinearPlace
 # set up logging
 logging.root.name = "DREAMPlace"
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="[%(levelname)-7s] %(name)s - %(message)s",
     handlers=[
         logging.FileHandler("DREAMPlace.log", mode="w"),
@@ -279,6 +279,15 @@ class PlacementEngine:
         tt = time.time()
         self.setup_placedb()
         self.place()
+        # with torch.profiler.profile(
+        #     activities=[
+        #         torch.profiler.ProfilerActivity.CPU,
+        #         torch.profiler.ProfilerActivity.CUDA,
+        #     ]
+        # ) as p:
+        #     self.place()
+        # print(p.key_averages().table(sort_by="self_cuda_time_total", row_limit=20))
+        # print(p.key_averages().table(sort_by="self_cpu_time_total", row_limit=20))
 
         if self.rsmt != float("inf"):
             self.save_placement()
@@ -297,7 +306,11 @@ class PlacementEngine:
             if self.params.get_congestion_map and hasattr(
                 self.placer.op_collections, "get_congestion_map_op"
             ):
+                tt2 = time.time()
                 self.get_congestion()
+                logging.info(
+                    "congestion extraction takes %.3f seconds" % (time.time() - tt2)
+                )
 
             logging.info("placement takes %.3f seconds" % (time.time() - tt))
         else:

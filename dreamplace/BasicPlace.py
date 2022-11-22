@@ -671,8 +671,8 @@ class BasicPlace(nn.Module):
             netpin_start=data_collections.flat_net2pin_start_map,
             pin2net_map=data_collections.pin2net_map,
             net_weights=data_collections.net_weights,
-            net_mask=data_collections.net_mask_all,  # AA: net_mask_ignore_large_degrees/net_mask_all
-            algorithm="net-by-net",
+            net_mask=data_collections.net_mask_ignore_large_degrees,  # net_mask_all
+            algorithm="atomic", # "net-by-net"
         )
 
         # wirelength for position
@@ -701,7 +701,7 @@ class BasicPlace(nn.Module):
             pin2net_map=data_collections.pin2net_map,
             net_weights=data_collections.net_weights,
             net_mask=data_collections.net_mask_ignore_large_weights,
-            algorithm="net-by-net",
+            algorithm="atomic", # "net-by-net"
         )
 
         # wirelength for position

@@ -254,6 +254,7 @@ class AutoDMPWorker(Worker):
         pd = CSH.UniformFloatHyperparameter(
             "pin_density", lower=0.1, upper=0.5, default_value=0.5
         )
+        risa = CSH.CategoricalHyperparameter("risa_weights", [0, 1], default_value=0)
 
         hyperparameters = {
             "all": [
@@ -277,6 +278,7 @@ class AutoDMPWorker(Worker):
                 replace_low,
                 replace_up,
                 # pd,
+                risa,
             ],
             "refine": [init_x, init_y, td, dw, halox, haloy],
             "refine_fixed_macros": [init_x, init_y, td, dw],

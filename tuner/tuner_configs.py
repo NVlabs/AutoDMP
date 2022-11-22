@@ -97,6 +97,7 @@ AUTODMP_BASE_CONFIG = {
     "bndry_padding_y": 0,
     "pin_density": -1,
     "route_info_input": "default",
+    "risa_weights": 0,
     "evaluate_pl": 0,
 }
 

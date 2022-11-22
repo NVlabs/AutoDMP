@@ -1153,35 +1153,37 @@ class NonLinearPlace(BasicPlace.BasicPlace):
 
         # run RSMT
         with torch.no_grad():
+            tt = time.time()
             rsmt_wl = self.op_collections.rsmt_wl_op(self.pos[0])
-            logging.info("FLUTE RSMT %.6E" % rsmt_wl)
+            logging.info("rsmt computation takes %.3f seconds" % (time.time() - tt))
+            logging.info("flute rsmt %.6E" % rsmt_wl)
 
         # get HPWL
         with torch.no_grad():
             hpwl = self.op_collections.hpwl_op(self.pos[0])
-            logging.info("Unweighted HPWL %.6E" % hpwl)
+            logging.info("unweighted hpwl %.6E" % hpwl)
 
         # save nets degree, RSMT, HPWL
-        with torch.no_grad():
-            degrees = torch.from_numpy(np.ediff1d(placedb.flat_net2pin_start_map))
-            mask = torch.logical_and(2 <= degrees, degrees < params.ignore_net_degree)
-            degrees = degrees[mask].long()
-            steiners = self.op_collections.rsmt_wl_op(self.pos[0], False)[mask]
-            wirelengths = (
-                self.op_collections.hpwl_op(self.pos[0], False)
-                .cpu()
-                .detach()[mask]
-            )
-            weights = steiners / wirelengths
-            # get new RISA weights
-            degrees, indices = torch.sort(degrees)
-            weights = weights[indices]
-            c = torch.stack((degrees, weights))
-            idxs, vals = torch.unique(c[0, :], return_counts=True)
-            vs = torch.split_with_sizes(c[1, :], tuple(vals))
-            weights_dict = {int(k.item()): float(v.mean()) for k, v in zip(idxs, vs)}
-            path = "%s/%s" % (params.result_dir, params.design_name())
-            with open("%s/risa_weights.pkl" % path, "wb") as f:
-                pickle.dump(weights_dict, f)
+        # with torch.no_grad():
+        #     degrees = torch.from_numpy(np.ediff1d(placedb.flat_net2pin_start_map))
+        #     mask = torch.logical_and(2 <= degrees, degrees < params.ignore_net_degree)
+        #     degrees = degrees[mask].long()
+        #     steiners = self.op_collections.rsmt_wl_op(self.pos[0], False)[mask]
+        #     wirelengths = (
+        #         self.op_collections.hpwl_op(self.pos[0], False)
+        #         .cpu()
+        #         .detach()[mask]
+        #     )
+        #     weights = steiners / wirelengths
+        #     # get new RISA weights
+        #     degrees, indices = torch.sort(degrees)
+        #     weights = weights[indices]
+        #     c = torch.stack((degrees, weights))
+        #     idxs, vals = torch.unique(c[0, :], return_counts=True)
+        #     vs = torch.split_with_sizes(c[1, :], tuple(vals))
+        #     weights_dict = {int(k.item()): float(v.mean()) for k, v in zip(idxs, vs)}
+        #     path = "%s/%s" % (params.result_dir, params.design_name())
+        #     with open("%s/risa_weights.pkl" % path, "wb") as f:
+        #         pickle.dump(weights_dict, f)
 
         return float(rsmt_wl), float(hpwl), processed_metrics

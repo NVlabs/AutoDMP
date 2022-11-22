@@ -1096,7 +1096,8 @@ class PlaceDB(object):
         self.update_macros(params)
 
         # set net weights for improved HPWL % RSMT correlation
-        self.set_net_weights()
+        if params.risa_weights == 1:
+            self.set_net_weights()
 
         # pin density inflation
         self.pin_density_inflation(params.pin_density)

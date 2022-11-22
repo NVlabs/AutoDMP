@@ -157,6 +157,16 @@
       "default": 0.5
     },
     {
+      "name": "risa_weights",
+      "type": "categorical",
+      "choices": [
+        0,
+        1
+      ],
+      "default": 1,
+      "weights": null
+    },
+    {
       "name": "stop_overflow",
       "type": "uniform_float",
       "log": false,

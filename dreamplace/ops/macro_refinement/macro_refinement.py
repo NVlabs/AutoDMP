@@ -20,6 +20,7 @@
 # @brief  macro orientation refinement
 #
 
+import math
 import torch
 from torch import nn
 
@@ -127,7 +128,7 @@ class MacroRefinement(nn.Module):
         self.macro_orient[macro] = self.orient_map[orig_orient][flip]
 
     @torch.no_grad()
-    def forward(self, pos, improvement=0.0002, max_iter=50):
+    def forward(self, pos, improvement=0.001):
         """
         Greedy approach
         -- flip each macro one after another
@@ -135,6 +136,8 @@ class MacroRefinement(nn.Module):
         """
         if self.num_macros == 0:
             return zip([], [])
+        else:
+            max_iter = int(100 / math.sqrt(self.num_macros))
 
         # macro sizes
         self.macro_size_x = self.node_size_x[self.macros_indexes]
