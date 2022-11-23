@@ -194,7 +194,7 @@ print(
 dp_dir, netlist = os.path.split(args.run_args["aux_input"])
 netlist = netlist.replace(".aux", "")
 result = hpres.logged_results_to_HBS_result(args.log_dir)
-candidates, df = get_candidates(result, num=args.num_pareto)
+candidates, _, df = get_candidates(result, num=args.num_pareto)
 print("Pareto candidates are:")
 print(candidates.to_markdown())
 
