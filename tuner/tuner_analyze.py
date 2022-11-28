@@ -119,9 +119,9 @@ def plot_pareto(df, paretos, candidates, filename="pareto-curve"):
     cx, cy, cz = candidates[axes].values.T
     fig = plt.figure(figsize=(16, 9))
     ax = plt.axes(projection="3d")
-    ax.set_xlim3d(0.9 * x.min(), 1.1 * x.min())
-    ax.set_ylim3d(0.9 * y.min(), 1.1 * y.min())
-    ax.set_zlim3d(0.9 * z.min(), 1.1 * z.min())
+    ax.set_xlim3d(0.9 * dx.min(), 1.1 * dx.min())
+    ax.set_ylim3d(0.9 * dy.min(), 1.1 * dy.min())
+    ax.set_zlim3d(0.9 * dz.min(), 1.1 * dz.min())
     ax.grid(b=True, color="black", linestyle="-.", linewidth=0.3, alpha=0.2)
     ax.scatter3D(dx, dy, dz, alpha=0.2, marker="o", color="grey", s=10, label="samples")
     ax.scatter3D(
@@ -168,7 +168,7 @@ def preprocess_df(df):
         print(le_wl.classes_)
 
 
-def analyze(df, classif, target):
+def analyze(result, classif, target):
     _, _, df = get_candidates(result)
     preprocess_df(df)
     # axes = ["rsmt", "congestion", "density"]
