@@ -194,7 +194,7 @@ print(
 dp_dir, netlist = os.path.split(args.run_args["aux_input"])
 netlist = netlist.replace(".aux", "")
 result = hpres.logged_results_to_HBS_result(args.log_dir)
-candidates, _, df = get_candidates(result, num=args.num_pareto)
+candidates, paretos, df = get_candidates(result, num=args.num_pareto)
 print("Pareto candidates are:")
 print(candidates.to_markdown())
 
@@ -216,4 +216,4 @@ for _, row in candidates.iterrows():
     dp_to_def(def_file, pl_file, macro_file, new_def_file)
 
 # Plot Pareto curve
-plot_pareto(result, args.num_pareto, opj(dest, f"{netlist}.pareto.png"))
+plot_pareto(df, paretos, candidates, opj(dest, f"{netlist}.pareto.png"))
