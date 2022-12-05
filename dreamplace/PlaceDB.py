@@ -38,64 +38,6 @@ import pdb
 datatypes = {"float32": np.float32, "float64": np.float64}
 
 
-def transform(funcs, values, targets):
-    """
-    @brief fn(fn-1(...f1(targets)...)) with f(., v) in (funcs, values)
-    """
-    import operator
-    from functools import reduce
-
-    assert len(funcs) == len(values)
-
-    def partial_right(func, /, *args, **keywords):
-        def newfunc(*fargs, **fkeywords):
-            newkeywords = {**keywords, **fkeywords}
-            return func(*fargs, *args, **newkeywords)
-
-        newfunc.func = func
-        newfunc.args = args
-        newfunc.keywords = keywords
-        return newfunc
-
-    ops = {
-        "add": operator.add,
-        "concat": operator.concat,
-        "contains": operator.contains,
-        "truediv": operator.truediv,
-        "floordiv": operator.floordiv,
-        "and_": operator.and_,
-        "xor": operator.xor,
-        "or_": operator.or_,
-        "pow": operator.pow,
-        "is_": operator.is_,
-        "is_not": operator.is_not,
-        "delitem": operator.delitem,
-        "getitem": operator.getitem,
-        "lshift": operator.lshift,
-        "mod": operator.mod,
-        "mul": operator.mul,
-        "matmul": operator.matmul,
-        "rshift": operator.rshift,
-        "sub": operator.sub,
-        "countOf": operator.countOf,
-        "indexOf": operator.indexOf,
-        "lt": operator.lt,
-        "le": operator.le,
-        "eq": operator.eq,
-        "ne": operator.ne,
-        "ge": operator.ge,
-        "gt": operator.gt,
-    }
-
-    funcs = [partial_right(ops[op], v) for op, v in zip(funcs, values)]
-
-    transformed = []
-    for t in targets:
-        transformed.append(reduce(lambda res, f: f(res), funcs, t))
-
-    return (*transformed,)
-
-
 class PlaceDB(object):
     """
     @brief placement database
@@ -209,13 +151,8 @@ class PlaceDB(object):
         @param scale_factor scale factor
         """
         unscale_factor = 1.0 / scale_factor
-        node_x = transform(
-            ["mul", "add"], [unscale_factor, shift_factor[0]], [self.node_x]
-        )[0]
-        node_y = transform(
-            ["mul", "add"], [unscale_factor, shift_factor[1]], [self.node_y]
-        )[0]
-
+        node_x = self.node_x * unscale_factor + shift_factor[0]
+        node_y = self.node_y * unscale_factor + shift_factor[1]
         return node_x, node_y
 
     def scale(self, shift_factor, scale_factor):
@@ -229,81 +166,64 @@ class PlaceDB(object):
             % (shift_factor[0], shift_factor[1], scale_factor)
         )
 
-        # scale only
-        (
-            self.node_size_x,
-            self.node_size_y,
-            self.pin_offset_x,
-            self.pin_offset_y,
-            self.row_height,
-            self.site_width,
-            self.routing_V,
-            self.routing_H,
-            self.macro_util_V,
-            self.macro_util_H,
-        ) = transform(
-            ["mul"],
-            [scale_factor],
-            [
-                self.node_size_x,
-                self.node_size_y,
-                self.pin_offset_x,
-                self.pin_offset_y,
-                self.row_height,
-                self.site_width,
-                self.routing_V,
-                self.routing_H,
-                self.macro_util_V,
-                self.macro_util_H,
-            ],
-        )
+        # node positions
+        self.node_x -= shift_factor[0]
+        self.node_x *= scale_factor
+        self.node_y -= shift_factor[1]
+        self.node_y *= scale_factor
 
-        # shift and scale
-        (
-            self.node_x,
-            self.xl,
-            self.xh,
-            self.routing_grid_xl,
-            self.routing_grid_xh,
-        ) = transform(
-            ["sub", "mul"],
-            [shift_factor[0], scale_factor],
-            [self.node_x, self.xl, self.xh, self.routing_grid_xl, self.routing_grid_xh],
-        )
+        # node sizes
+        self.node_size_x *= scale_factor
+        self.node_size_y *= scale_factor
 
-        (
-            self.node_y,
-            self.yl,
-            self.yh,
-            self.routing_grid_yl,
-            self.routing_grid_yh,
-        ) = transform(
-            ["sub", "mul"],
-            [shift_factor[1], scale_factor],
-            [self.node_y, self.yl, self.yh, self.routing_grid_yl, self.routing_grid_yh],
-        )
+        # pin offsets
+        self.pin_offset_x *= scale_factor
+        self.pin_offset_y *= scale_factor
+
+        # floorplan
+        self.xl -= shift_factor[0]
+        self.xl *= scale_factor
+        self.yl -= shift_factor[1]
+        self.yl *= scale_factor
+        self.xh -= shift_factor[0]
+        self.xh *= scale_factor
+        self.yh -= shift_factor[1]
+        self.yh *= scale_factor
+        self.row_height *= scale_factor
+        self.site_width *= scale_factor
+
+        # routing
+        self.routing_grid_xl -= shift_factor[0]
+        self.routing_grid_xl *= scale_factor
+        self.routing_grid_yl -= shift_factor[1]
+        self.routing_grid_yl *= scale_factor
+        self.routing_grid_xh -= shift_factor[0]
+        self.routing_grid_xh *= scale_factor
+        self.routing_grid_yh -= shift_factor[1]
+        self.routing_grid_yh *= scale_factor
+        self.routing_V *= scale_factor
+        self.routing_H *= scale_factor
+        self.macro_util_V *= scale_factor
+        self.macro_util_H *= scale_factor
 
         # shift factor for rectangle
         box_shift_factor = np.array(
             [shift_factor, shift_factor], dtype=self.rows.dtype
         ).reshape(1, -1)
-        self.rows = transform(
-            ["sub", "mul"], [box_shift_factor, scale_factor], [self.rows]
-        )[0]
-        self.total_space_area *= scale_factor * scale_factor  # this is area
 
+        # placement rows
+        self.rows -= box_shift_factor
+        self.rows *= scale_factor
+        self.total_space_area *= scale_factor * scale_factor
+
+        # regions
         if len(self.flat_region_boxes) > 0:
-            self.flat_region_boxes = transform(
-                ["sub", "mul"],
-                [box_shift_factor, scale_factor],
-                [self.flat_region_boxes],
-            )[0]
-        # may have performance issue
-        # I assume there are not many boxes
-        if len(self.regions) > 0:
-            self.regions = transform(
-                ["sub", "mul"], [box_shift_factor, scale_factor], self.regions
-            )
+            self.flat_region_boxes -= box_shift_factor
+            self.flat_region_boxes *= scale_factor
+        for i in range(len(self.regions)):
+            # may have performance issue
+            self.regions[i] -= box_shift_factor
+            self.regions[i] *= scale_factor
 
     def sort(self):
         """
@@ -934,7 +854,7 @@ class PlaceDB(object):
             self.node_size_y[self.fixed_slice][self.fixed_macro_mask] += (
                 2 * params.macro_halo_y
             )
-            
+
             # shift macro positions
             self.node_x[self.movable_slice][
                 self.movable_macro_mask
@@ -944,7 +864,7 @@ class PlaceDB(object):
             ] -= params.macro_halo_y
             self.node_x[self.fixed_slice][self.fixed_macro_mask] -= params.macro_halo_x
             self.node_y[self.fixed_slice][self.fixed_macro_mask] -= params.macro_halo_y
-            
+
             # shift macro pins
             self.pin_offset_x[self.movable_slice][
                 self.movable_macro_mask
