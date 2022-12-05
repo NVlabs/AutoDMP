@@ -242,20 +242,9 @@ class PlacementEngine:
 
     def get_congestion(self):
         pos = self.placer.data_collections.pos[0]
-        # use new congestion estimation
-        if self.params.route_info_input != "":
-            (
-                congestion_map,
-                max_overflow,
-                total_overflow,
-            ) = self.placer.op_collections.get_congestion_map_op(
-                pos,
-                True,
-            )
-            logging.info(f"Overflow max/total: {max_overflow}/{total_overflow}")
-        else:
-            congestion_map = self.placer.op_collections.get_congestion_map_op(pos)
-
+        congestion_map = self.placer.op_collections.get_congestion_map_op(
+            pos, self.params.route_info_input != ""
+        )
         congestion, _ = torch.topk(
             congestion_map.flatten(), k=int(0.1 * congestion_map.numel())
         )

@@ -27,7 +27,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.cm as cm
 import numpy as np
-import cv2
 import logging
 import os
 
@@ -193,61 +192,12 @@ class RudyWithMacros(nn.Module):
                 2.0,
             )
 
-        # overflows
-        horizontal_overflow_map = horizontal_utilization_map - 1
-        vertical_overflow_map = vertical_utilization_map - 1
-        cutoff = 0.0
-        horizontal_overflow_map[horizontal_overflow_map <= cutoff] = 0
-        vertical_overflow_map[vertical_overflow_map <= cutoff] = 0
-
-        if self.params.plot_flag:
-            path = "%s/%s" % (self.params.result_dir, self.params.design_name())
-            logging.info("writing overflow maps to %s" % (path))
-            plot(
-                self.bin_size_x,
-                self.bin_size_y,
-                horizontal_overflow_map.clone().cpu().numpy(),
-                opj(path, f"{self.params.design_name()}.hovflw"),
-                "2D",
-                0.0,
-                0.6,
-            )
-
-            plot(
-                self.bin_size_x,
-                self.bin_size_y,
-                vertical_overflow_map.clone().cpu().numpy(),
-                opj(path, f"{self.params.design_name()}.vovflw"),
-                "2D",
-                0.0,
-                0.6,
-            )
-
-        # max_overflow = torch.max(
-        #     torch.max(horizontal_overflow_map), torch.max(vertical_overflow_map)
-        # )
-        # total_overflow = horizontal_overflow_map.sum() + vertical_overflow_map.sum()
-
-        # extract contiguous regions of overflow
-        himg = np.array(T.ToPILImage()(horizontal_overflow_map))
-        vimg = np.array(T.ToPILImage()(vertical_overflow_map))
-        _, hbin = cv2.threshold(himg, cutoff, 255, cv2.THRESH_BINARY)
-        _, vbin = cv2.threshold(vimg, cutoff, 255, cv2.THRESH_BINARY)
-        _, hcontours, _ = cv2.findContours(hbin, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-        _, vcontours, _ = cv2.findContours(vbin, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-        ovflw_areas = []
-        for c in vcontours + hcontours:
-            cimg = np.zeros_like(vbin)
-            cv2.drawContours(cimg, c, -1, color=128, thickness=-1)
-            ovflw_areas.append(len(np.where(cimg == 128)[0]))
-        max_overflow, total_overflow = max(ovflw_areas, default=0), sum(ovflw_areas)
-
         # infinity norm
         route_utilization_map = torch.max(
             horizontal_utilization_map.abs_(), vertical_utilization_map.abs_()
         )
 
-        return route_utilization_map, max_overflow, total_overflow
+        return route_utilization_map
 
 
 def plot(sx, sy, map, name, dim="2D", vmin=0.0, vmax=1.0, hist=False):
