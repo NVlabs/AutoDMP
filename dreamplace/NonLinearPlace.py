@@ -894,32 +894,32 @@ class NonLinearPlace(BasicPlace.BasicPlace):
         if params.macro_halo_x >= 0 and params.macro_halo_y >= 0:
             with torch.no_grad():
                 # node sizes
-                self.data_collections.node_size_x[placedb.movable_slice][
-                    placedb.movable_macro_mask
-                ] -= (2 * params.macro_halo_x)
-                self.data_collections.node_size_y[placedb.movable_slice][
-                    placedb.movable_macro_mask
-                ] -= (2 * params.macro_halo_y)
-                self.data_collections.node_size_x[placedb.fixed_slice][
-                    placedb.fixed_macro_mask
-                ] -= (2 * params.macro_halo_x)
-                self.data_collections.node_size_y[placedb.fixed_slice][
-                    placedb.fixed_macro_mask
-                ] -= (2 * params.macro_halo_y)
+                self.data_collections.node_size_x[placedb.movable_macro_idx] -= (
+                    2 * params.macro_halo_x
+                )
+                self.data_collections.node_size_y[placedb.movable_macro_idx] -= (
+                    2 * params.macro_halo_y
+                )
+                # self.data_collections.node_size_x[placedb.fixed_macro_idx] -= (
+                #     2 * params.macro_halo_x
+                # )
+                # self.data_collections.node_size_y[placedb.fixed_macro_idx] -= (
+                #     2 * params.macro_halo_y
+                # )
 
                 # pin offsets
-                self.data_collections.pin_offset_x[placedb.movable_slice][
-                    placedb.movable_macro_mask
+                self.data_collections.pin_offset_x[
+                    placedb.movable_macro_pins
                 ] -= params.macro_halo_x
-                self.data_collections.pin_offset_y[placedb.movable_slice][
-                    placedb.movable_macro_mask
+                self.data_collections.pin_offset_y[
+                    placedb.movable_macro_pins
                 ] -= params.macro_halo_y
-                self.data_collections.pin_offset_x[placedb.fixed_slice][
-                    placedb.fixed_macro_mask
-                ] -= params.macro_halo_x
-                self.data_collections.pin_offset_y[placedb.fixed_slice][
-                    placedb.fixed_macro_mask
-                ] -= params.macro_halo_y
+                # self.data_collections.pin_offset_x[
+                #     placedb.fixed_macro_pins
+                # ] -= params.macro_halo_x
+                # self.data_collections.pin_offset_y[
+                #     placedb.fixed_macro_pins
+                # ] -= params.macro_halo_y
 
                 # macro locations
                 self.pos[0][placedb.movable_slice][

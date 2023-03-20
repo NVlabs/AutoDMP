@@ -812,12 +812,16 @@ class PlaceDB(object):
         self.movable_macro_mask = (node_areas[self.movable_slice] > mean_area) & (
             self.node_size_y[self.movable_slice] > row_height
         )
-        self.num_movable_macros = np.where(self.movable_macro_mask)[0].shape[0]
+        self.movable_macro_idx = np.where(self.movable_macro_mask)[0]
+        self.num_movable_macros = self.movable_macro_idx.shape[0]
         # fixed macros
         self.fixed_macro_mask = (node_areas[self.fixed_slice] > mean_area) & (
             self.node_size_y[self.fixed_slice] > row_height
         )
-        self.num_fixed_macros = np.where(self.fixed_macro_mask)[0].shape[0]
+        self.fixed_macro_idx = (
+            self.num_movable_nodes + np.where(self.fixed_macro_mask)[0]
+        )
+        self.num_fixed_macros = self.fixed_macro_idx.shape[0]
 
         # setup macro padding for overlap loss
         self.macro_padding_x = params.macro_padding_x
@@ -828,56 +832,34 @@ class PlaceDB(object):
         # make sure the macros & halo sizes are multiples of site
         params.macro_halo_x = self.crop_to_site(params.macro_halo_x, "x")
         params.macro_halo_y = self.crop_to_site(params.macro_halo_y, "y")
-        self.node_size_x[self.movable_slice][
-            self.movable_macro_mask
-        ] = self.crop_to_site(
-            self.node_size_x[self.movable_slice][self.movable_macro_mask], "x"
+        self.node_size_x[self.movable_macro_idx] = self.crop_to_site(
+            self.node_size_x[self.movable_macro_idx], "x"
         )
-        self.node_size_y[self.movable_slice][
-            self.movable_macro_mask
-        ] = self.crop_to_site(
-            self.node_size_y[self.movable_slice][self.movable_macro_mask], "y"
+        self.node_size_y[self.movable_macro_idx] = self.crop_to_site(
+            self.node_size_y[self.movable_macro_idx], "y"
         )
 
         # add halo around macros
         if params.macro_halo_x >= 0 and params.macro_halo_y >= 0:
             # increase macro sizes
-            self.node_size_x[self.movable_slice][self.movable_macro_mask] += (
-                2 * params.macro_halo_x
-            )
-            self.node_size_y[self.movable_slice][self.movable_macro_mask] += (
-                2 * params.macro_halo_y
-            )
-            self.node_size_x[self.fixed_slice][self.fixed_macro_mask] += (
-                2 * params.macro_halo_x
-            )
-            self.node_size_y[self.fixed_slice][self.fixed_macro_mask] += (
-                2 * params.macro_halo_y
-            )
+            self.node_size_x[self.movable_macro_idx] += 2 * params.macro_halo_x
+            self.node_size_y[self.movable_macro_idx] += 2 * params.macro_halo_y
+            # self.node_size_x[self.fixed_macro_idx] += 2 * params.macro_halo_x
+            # self.node_size_y[self.fixed_macro_idx] += 2 * params.macro_halo_y
 
             # shift macro positions
-            self.node_x[self.movable_slice][
-                self.movable_macro_mask
-            ] -= params.macro_halo_x
-            self.node_y[self.movable_slice][
-                self.movable_macro_mask
-            ] -= params.macro_halo_y
-            self.node_x[self.fixed_slice][self.fixed_macro_mask] -= params.macro_halo_x
-            self.node_y[self.fixed_slice][self.fixed_macro_mask] -= params.macro_halo_y
+            self.node_x[self.movable_macro_idx] -= params.macro_halo_x
+            self.node_y[self.movable_macro_idx] -= params.macro_halo_y
+            # self.node_x[self.fixed_macro_idx] -= params.macro_halo_x
+            # self.node_y[self.fixed_macro_idx] -= params.macro_halo_y
 
             # shift macro pins
-            self.pin_offset_x[self.movable_slice][
-                self.movable_macro_mask
-            ] += params.macro_halo_x
-            self.pin_offset_y[self.movable_slice][
-                self.movable_macro_mask
-            ] += params.macro_halo_y
-            self.pin_offset_x[self.fixed_slice][
-                self.fixed_macro_mask
-            ] += params.macro_halo_x
-            self.pin_offset_y[self.fixed_slice][
-                self.fixed_macro_mask
-            ] += params.macro_halo_y
+            self.movable_macro_pins = np.isin(self.pin2node_map, self.movable_macro_idx)
+            self.pin_offset_x[self.movable_macro_pins] += params.macro_halo_x
+            self.pin_offset_y[self.movable_macro_pins] += params.macro_halo_y
+            # self.fixed_macro_pins = np.isin(self.pin2node_map, self.fixed_macro_idx)
+            # self.pin_offset_x[self.fixed_macro_pins] += params.macro_halo_x
+            # self.pin_offset_y[self.fixed_macro_pins] += params.macro_halo_y
 
     def set_net_weights(self):
         # with open("risa_weights.pkl", 'rb') as f:
