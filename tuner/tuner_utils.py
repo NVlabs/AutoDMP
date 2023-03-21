@@ -18,6 +18,7 @@ import re
 import os
 
 
+# ----------------------------------------------------------------------------
 # Parse dictionary from command line
 class parse_dictionary(argparse.Action):
     # parse dictionary given in command line
@@ -32,6 +33,24 @@ class parse_dictionary(argparse.Action):
             getattr(namespace, self.dest)[key] = value
 
 
+# ----------------------------------------------------------------------------
+# Parse a comma separated list of numbers or ranges and return a list of ints.
+# Example: '1,2,5-10' returns [1, 2, 5, 6, 7, 8, 9, 10]
+def parse_int_list(s):
+    if isinstance(s, list):
+        return s
+    ranges = []
+    range_re = re.compile(r"^(\d+)-(\d+)$")
+    for p in s.split(","):
+        m = range_re.match(p)
+        if m:
+            ranges.extend(range(int(m.group(1)), int(m.group(2)) + 1))
+        else:
+            ranges.append(int(p))
+    return ranges
+
+
+# ----------------------------------------------------------------------------
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -43,6 +62,7 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
+# ----------------------------------------------------------------------------
 # Convert Bookshelf to DEF
 def dp_to_def(def_file, pl_file, macro_file, target_filename=""):
     macro_halo = 0

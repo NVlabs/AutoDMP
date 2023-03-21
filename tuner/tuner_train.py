@@ -34,7 +34,7 @@ opj = os.path.join
 os.environ["DREAMPLACE_DISABLE_PRINT"] = "1"
 
 from tuner_worker import AutoDMPWorker
-from tuner_utils import parse_dictionary, str2bool, dp_to_def
+from tuner_utils import parse_dictionary, parse_int_list, str2bool, dp_to_def
 from tuner_analyze import get_candidates, plot_pareto
 
 
@@ -104,6 +104,12 @@ parser.add_argument(
     "--worker", help="Flag to turn this into a worker process", action="store_true"
 )
 parser.add_argument("--worker_id", type=int, help="Worker id", default=0)
+parser.add_argument(
+    "--gpu_pool",
+    type=parse_int_list,
+    help="List of GPUs to use (e.g. 1,2,0-3)",
+    default="-1",
+)
 args = parser.parse_args()
 
 
@@ -115,7 +121,12 @@ if args.worker:
 
     if args.run_args["gpu"] == "1":
         # alternate the gpu_id of workers
-        gpu_id = args.worker_id % torch.cuda.device_count()
+        if args.gpu_pool == [-1]:
+            available_gpus = range(torch.cuda.device_count())
+        else:
+            available_gpus = args.gpu_pool
+            assert all(g < torch.cuda.device_count() for g in available_gpus)
+        gpu_id = available_gpus[args.worker_id % len(available_gpus)]
         args.run_args["gpu_id"] = gpu_id
         print(f"Assigning worker {args.worker_id} to GPU {gpu_id}")
 
