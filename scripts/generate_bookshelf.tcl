@@ -31,14 +31,19 @@ deleteBufferTree
 ####################################################
 set nets  [dbGet -u -e top.nets {.numTerms > 1 && .isPwrOrGnd == 0}]
 set insts [dbGet -u -e top.insts]
-set ports [dbGet -u -e top.terms]
+set fixed_insts [dbGet -u -e $insts.pStatus fixed -p]
+set terms [dbGet -u -e top.terms]
 set pins  [dbGet -u -e $nets.instTerms]
+set blkgs {}
 
 set num_insts [llength $insts]
 set num_nets  [llength $nets]
-set num_ports [llength $ports]
-set num_pins  [expr [llength $pins] + $num_ports]
-set num_nodes [expr $num_insts + $num_ports]
+set num_terms [llength $terms]
+set num_pins  [llength $pins]
+set num_blkgs [llength $blkgs]
+set num_fixed_insts [llength $fixed_insts]
+set num_nodes [expr $num_insts + $num_terms + $num_blkgs]
+set num_terminals [expr $num_fixed_insts + $num_terms + $num_blkgs]
 
 set DB_UNITS [dbGet head.dbUnits]
 set DB_DIGITS 0
@@ -82,7 +87,7 @@ close $fp_aux
 set fp_nodes [open ${design}.nodes w]
 puts $fp_nodes "UCLA nodes 1.0\n"
 puts $fp_nodes "NumNodes : $num_nodes"
-puts $fp_nodes "NumTerminals : $num_ports\n"
+puts $fp_nodes "NumTerminals : $num_terminals\n"
 
 set fp_pl [open ${design}.pl w]
 puts $fp_pl "UCLA pl 1.0\n"
@@ -90,7 +95,7 @@ puts $fp_pl "UCLA pl 1.0\n"
 # write IOs
 set pin_size_x [Rescale 0.0]
 set pin_size_y [Rescale 0.0]
-foreach p $ports {
+foreach p $terms {
     set name [dbGet $p.defName]
     set x [Rescale [dbGet $p.pt_x]]
     set y [Rescale [dbGet $p.pt_y]]
