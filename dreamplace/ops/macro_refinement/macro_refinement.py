@@ -13,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-##
-# @file   macro_refinement.py
-# @author Anthony Agnesina
-# @date   Sept. 2022
-# @brief  macro orientation refinement
-#
-
 import math
 import torch
 from torch import nn

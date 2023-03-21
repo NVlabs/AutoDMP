@@ -13,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-##
-# @file   macro_overlap.py
-# @author Anthony Agnesina
-# @date   July 2022
-# @brief  macro overlap penalty
-#
-
 from dataclasses import dataclass
 import torch
 from torch import nn

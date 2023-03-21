@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +18,6 @@
 # @date   Jun 2018
 # @brief  Base placement class
 #
-# 8/4/2022 Mark Ren  add weight_hpwl report
 
 from dataclasses import dataclass, fields
 import os
@@ -406,7 +404,7 @@ class BasicPlace(nn.Module):
                     size=placedb.num_movable_nodes,
                 )
                 - placedb.node_size_x[0 : placedb.num_movable_nodes] / 2
-            )  # fix by Mark Ren, take care offset
+            )
 
         # y position
         self.init_pos[
@@ -422,7 +420,7 @@ class BasicPlace(nn.Module):
                     size=placedb.num_movable_nodes,
                 )
                 - placedb.node_size_y[0 : placedb.num_movable_nodes] / 2
-            )  # fix by Mark Ren, take care offset
+            )
 
         if placedb.num_filler_nodes:  # uniformly distribute filler cells in the layout
             if len(placedb.regions) > 0:

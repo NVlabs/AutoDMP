@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -1172,8 +1171,7 @@ row height = %g, site width = %g
             ]
         )
 
-        # Mark Ren: check movable macros, adjust area to treat movable macros as fixed macros
-        # begining:
+        # check movable macros, adjust area to treat movable macros as fixed macros
         if self.num_movable_macros > 0:
             logging.info(
                 "detect movable macros %d, area %g, reduce those area from movable_area",
@@ -1192,7 +1190,6 @@ row height = %g, site width = %g
                 )
             )
 
-        # done, Mark Ren
         target_density = min(self.total_movable_node_area / self.total_space_area, 1.0)
         if target_density > params.target_density:
             logging.warn(
@@ -1525,7 +1522,6 @@ row height = %g, site width = %g
             f.write(content)
         logging.info("write_pl takes %.3f seconds" % (time.time() - tt))
 
-    # Anthony: remove? it's incorrect
     def write_nets(self, params, net_file):
         """
         @brief write .net file

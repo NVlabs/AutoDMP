@@ -1,5 +1,5 @@
 /*
-* SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+* Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,6 @@
  * Routability-driven Placement", by Peter Spindler, DATE'07 "RISA: Accurate and
  * Efficient Placement Routability Modeling", by Chih-liang Eric Cheng,
  * ICCAD'94
- * Anthony Agnesina: added macro blockages effect on congestion
  */
 
 #include "utility/src/torch.h"

@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +18,6 @@
 # @date   Jul 2018
 # @brief  Nonlinear placement engine to be called with parameters and placement database
 #
-# 8/4/2022 Mark Ren  add weight_hpwl report
 
 import os
 import sys
@@ -249,7 +247,7 @@ class NonLinearPlace(BasicPlace.BasicPlace):
                                 return True
                         # a heuristic to detect divergence and stop early
                         """
-                        # Mark Ren: remove another heuristics
+                        # remove another heuristics
                         if len(metrics) > 50:
                             cur_metric = metrics[-1][-1][-1]
                             prev_metric = metrics[-50][-1][-1]
@@ -586,7 +584,7 @@ class NonLinearPlace(BasicPlace.BasicPlace):
                             ## divergence threshold should decrease as overflow decreases
                             ## only detect divergence when overflow is relatively low but not too low
                             """
-                            # removed by Mark Ren, this heuristics makes placement unstable
+                            # this heuristics makes placement unstable
                             if (
                                 len(placedb.regions) == 0
                                 and params.stop_overflow * 1.1 < overflow_list[-1] < params.stop_overflow * 4
@@ -623,7 +621,7 @@ class NonLinearPlace(BasicPlace.BasicPlace):
 
                             ## quadratic penalty and entropy injection
                             """
-                            # removed by Mark Ren. This heuristics makes placement unstable
+                            # This heuristics makes placement unstable
                             if (
                                 len(placedb.regions) == 0
                                 and iteration - last_perturb_iter > min_perturb_interval
