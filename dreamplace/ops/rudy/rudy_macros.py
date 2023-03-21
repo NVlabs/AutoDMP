@@ -92,11 +92,17 @@ class RudyWithMacros(nn.Module):
         bin_capa_H = self.fp_info.routing_H / num_bins
         bin_capa_V = self.fp_info.routing_V / num_bins
 
-        horizontal_utilization_map = torch.zeros(
+        horizontal_bin_capacity = torch.full(
             (self.num_bins_x, self.num_bins_y),
+            fill_value=bin_capa_H,
             dtype=pin_pos.dtype,
             device=pin_pos.device,
         )
+        vertical_bin_capacity = torch.full_like(
+            horizontal_bin_capacity, fill_value=bin_capa_V
+        )
+
+        horizontal_utilization_map = torch.zeros_like(horizontal_bin_capacity)
         vertical_utilization_map = torch.zeros_like(horizontal_utilization_map)
 
         if pos.is_cuda:
@@ -135,6 +141,9 @@ class RudyWithMacros(nn.Module):
             unit_macro_util_H = self.fp_info.macro_util_H / macro_area
             unit_macro_util_V = self.fp_info.macro_util_V / macro_area
 
+            horizontal_macro_demand = torch.zeros_like(horizontal_bin_capacity)
+            vertical_macro_demand = torch.zeros_like(vertical_bin_capacity)
+
             func_macros(
                 macro_pos_x,
                 macro_pos_y,
@@ -150,13 +159,16 @@ class RudyWithMacros(nn.Module):
                 self.fp_info.yh,
                 self.num_bins_x,
                 self.num_bins_y,
-                horizontal_utilization_map,
-                vertical_utilization_map,
+                horizontal_macro_demand,
+                vertical_macro_demand,
             )
+            
+            horizontal_bin_capacity -= horizontal_macro_demand
+            vertical_bin_capacity -= vertical_macro_demand
 
         # convert demand to utilization in each bin
-        horizontal_utilization_map.div_(bin_capa_H)
-        vertical_utilization_map.div_(bin_capa_V)
+        horizontal_utilization_map.div_(horizontal_bin_capacity)
+        vertical_utilization_map.div_(vertical_bin_capacity)
 
         # Gaussian filter
         hsigma = (1.0 / 16.0) * (self.fp_info.xh - self.fp_info.xl) / self.bin_size_x
