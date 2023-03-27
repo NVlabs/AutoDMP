@@ -3,6 +3,12 @@
 Built upon the GPU-accelerated global placer [DREAMPlace](https://doi.org/10.1109/TCAD.2020.3003843) and detailed placer [ABCDPlace](https://doi.org/10.1109/TCAD.2020.2971531),
 AutoDMP adds simultaneous macro and standard cell placement enhancements and automatic parameter tuning based on multi-objective hyperparameter Bayesian optimization (MOBO).
 
+* Animations
+
+| MemPool Group | Ariane |
+| -------- | ----------- |
+| ![MemPool Group](images/mempool.gif) | ![Ariane](images/ariane.gif) |
+
 # Publications
 
 * Anthony Agnesina, Puranjay Rajvanshi, Tian Yang, Geraldo Pradipta, Austin Jiao, Ben Keller, Brucek Khailany, and Haoxing Ren, 
