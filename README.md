@@ -7,7 +7,7 @@ AutoDMP adds simultaneous macro and standard cell placement enhancements and aut
 
 * Anthony Agnesina, Puranjay Rajvanshi, Tian Yang, Geraldo Pradipta, Austin Jiao, Ben Keller, Brucek Khailany, and Haoxing Ren, 
   "**AutoDMP: Automated DREAMPlace-based Macro Placement**", 
-  International Symposium on Physical Design (ISPD), Virtual Event, Mar 26-29, 2023
+  International Symposium on Physical Design (ISPD), Virtual Event, Mar 26-29, 2023 ([preprint](https://research.nvidia.com/publication/2023-03_autodmp-automated-dreamplace-based-macro-placement)) ([blog](https://developer.nvidia.com/blog/autodmp-optimizes-macro-placement-for-chip-design-with-ai-and-gpus/))
 
 # Dependency 
 
