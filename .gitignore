@@ -14,3 +14,4 @@ install
 thirdparty/flute
 .DS_Store
 .vscode/*
+bin

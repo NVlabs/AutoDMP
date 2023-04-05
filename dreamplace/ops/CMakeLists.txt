@@ -16,6 +16,8 @@ add_subdirectory(fence_region)
 # legalization operators
 add_subdirectory(legality_check)
 add_subdirectory(macro_legalize)
+add_subdirectory(macro_overlap)
+add_subdirectory(macro_refinement)
 add_subdirectory(greedy_legalize)
 add_subdirectory(abacus_legalize)
 # detailed placement operators
