@@ -1,2 +1,2 @@
 * linguist-vendored
-*.pl linguist-detectable=false
+*.plt linguist-detectable=false
